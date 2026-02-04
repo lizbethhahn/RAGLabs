@@ -1,6 +1,6 @@
 ## Lab 1: Embedding Inspector
 
-This lab introduces you to **text embeddings**, which are numerical representations of text that AI models use to understand semantic meaning. To begin clone [CodeYouAIClass2026Unit4lab](https://github.com/CodeYouOrg/CodeYouAIClass2026Unit4lab.git)
+This lab introduces you to **text embeddings**, which are numerical representations of text that AI models use to understand semantic meaning.
 
 #### Setup: Deploy the Embedding Model
 1. Visit https://github.com/marketplace/models

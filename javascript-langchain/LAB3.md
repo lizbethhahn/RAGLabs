@@ -29,11 +29,11 @@ With LangChain and InMemoryVectorStore, you don't need to manually define a data
 ```
 I need to understand how to store documents in the InMemoryVectorStore.
 Each document will have:
-- page_content: the document text
-- metadata: a dictionary with 'fileName', 'createdAt', and any other relevant fields
+- pageContent: the document text
+- metadata: an object with 'fileName', 'createdAt', and any other relevant fields
 - The embedding is generated automatically by the vector store
 
-No separate data model class is needed in Python with LangChain.
+No separate data model class is needed in JavaScript with LangChain.
 ```
 
 **What to Look For:** LangChain's Document structure is simpler than Java - no annotations or class definitions needed.
@@ -47,14 +47,14 @@ Before loading documents, you need to clean up the sentence data from Lab 2.
 **Prompt 2: Remove the Sentence Loading Code**
 ```
 Comment out or remove all the code that:
-- Creates the sentences list
-- Adds sentences to the vector store using add_texts()
+- Creates the sentences array
+- Adds sentences to the vector store using addDocuments()
 - The search loop from Lab 2
 
-Keep the vector store initialization code (InMemoryVectorStore), but we'll be adding different data loading logic.
+Keep the vector store initialization code (MemoryVectorStore), but we'll be adding different data loading logic.
 ```
 
-**What to Look For:** Your app.py should still initialize the embeddings and vector store, but no longer populate it with sentences.
+**What to Look For:** Your app.js should still initialize the embeddings and vector store, but no longer populate it with sentences.
 
 ---
 
@@ -62,24 +62,25 @@ Keep the vector store initialization code (InMemoryVectorStore), but we'll be ad
 
 Now you'll create a function to read a markdown file and store it in the vector database.
 
-**📚 Reference:** [Python File I/O](https://docs.python.org/3/tutorial/inputoutput.html#reading-and-writing-files) - Learn about reading files in Python.
+**📚 Reference:** [Node.js File System](https://nodejs.org/api/fs.html) - Learn about reading files in Node.js.
 
 **Prompt 3: Create File Loading Function**
 ```
-Create a function called load_document that:
-- Takes parameters: the vector_store and a file_path (string)
-- Reads all text from the file using open() and read()
+Create an async function called loadDocument that:
+- Takes parameters: the vectorStore and a filePath (string)
+- Reads all text from the file using fs.readFileSync() with 'utf-8' encoding
 - Creates a LangChain Document object with:
-  - page_content: The full document text
-  - metadata: A dictionary with:
-    - 'fileName': The file name from the path (use os.path.basename(file_path))
-    - 'createdAt': Current timestamp using datetime.now().isoformat()
-- Adds the document to the vector store using vector_store.add_documents([document])
+  - pageContent: The full document text
+  - metadata: An object with:
+    - fileName: The file name from the path (use path.basename(filePath))
+    - createdAt: Current timestamp using new Date().toISOString()
+- Adds the document to the vector store using await vectorStore.addDocuments([document])
 - Prints a success message with the filename and content length
 - Returns the document ID
 
-Add error handling using try-except for FileNotFoundError and other exceptions.
-Import Document from langchain_core.documents
+Add error handling using try-catch for file errors.
+Import Document from '@langchain/core/documents'
+Import fs from 'fs' and path from 'path'
 ```
 
 **What to Look For:** This function encapsulates the logic for loading a single document into the vector database.
@@ -92,16 +93,16 @@ Let's try loading the health insurance brochure first.
 
 **Prompt 4: Load HealthInsuranceBrochure.md**
 ```
-After the vector store is created, call the load_document function to load the file "HealthInsuranceBrochure.md" from the workspace root directory.
+After the vector store is created, call the loadDocument function to load the file "HealthInsuranceBrochure.md" from the workspace root directory.
 Display a header "=== Loading Documents into Vector Database ===" before loading.
 Print the filename and a confirmation when it loads successfully.
 ```
 
-**Test Point**: Run the application using `python app.py`. 
+**Test Point**: Run the application using `node app.js`. 
 
 **Expected Output:**
 ```
-🤖 Python LangChain Agent Starting...
+🤖 JavaScript LangChain Agent Starting...
 
 === Loading Documents into Vector Database ===
 
@@ -124,10 +125,10 @@ Now let's see what happens when you try to load a much larger document.
 
 **Prompt 5: Add Loading for EmployeeHandbook.md**
 ```
-After loading the HealthInsuranceBrochure.md, add another call to load_document to load "EmployeeHandbook.md" from the workspace root directory.
+After loading the HealthInsuranceBrochure.md, add another call to loadDocument to load "EmployeeHandbook.md" from the workspace root directory.
 ```
 
-**Test Point**: Run the application again using `python app.py`.
+**Test Point**: Run the application again using `node app.js`.
 
 **What Will Happen:**
 You'll encounter an error! The embedding model has a maximum token limit (typically around 8,191 tokens for text-embedding-3-small), and the Employee Handbook is too large to process in one go.
@@ -152,20 +153,20 @@ Before moving to the solution, let's understand what just happened.
 
 **Prompt 6: Add Error Analysis**
 ```
-In the load_document function's except block, enhance the error handling to:
-- Check if the exception message (str(e)) contains "maximum context length" or "token"
+In the loadDocument function's catch block, enhance the error handling to:
+- Check if the error message (error.message) contains "maximum context length" or "token"
 - If so, display a special message explaining:
   "⚠️ This document is too large to embed as a single chunk."
   "Token limit exceeded. The embedding model can only process up to 8,191 tokens at once."
   "Solution: The document needs to be split into smaller chunks."
-- Otherwise, display the regular error message using str(e)
+- Otherwise, display the regular error message using error.message
 ```
 
-**Test Again**: Run `python app.py` one more time.
+**Test Again**: Run `node app.js` one more time.
 
 **Expected Output:**
 ```
-🤖 Python LangChain Agent Starting...
+🤖 JavaScript LangChain Agent Starting...
 
 === Loading Documents into Vector Database ===
 
@@ -183,7 +184,7 @@ Solution: The document needs to be split into smaller chunks.
 
 ### Understanding the Problem
 
-**📚 Learn More:** [LangChain Text Splitters](https://python.langchain.com/v0.2/docs/how_to/#text-splitters) - Understanding document chunking strategies.
+**📚 Learn More:** [LangChain Text Splitters](https://js.langchain.com/docs/how_to/#text-splitters) - Understanding document chunking strategies.
 
 **What You've Discovered:**
 

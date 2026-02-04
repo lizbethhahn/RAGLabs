@@ -22,21 +22,21 @@ Each strategy has trade-offs between semantic coherence, chunk size consistency,
 
 ### Step 1: Install Text Chunking Dependencies
 
-LangChain's text chunking functionality is available through the **langchain-text-splitters** package.
+LangChain's text chunking functionality is available through the **@langchain/textsplitters** package.
 
 **Prompt 1: Add Text Chunking Package**
 ```
-I need to add text chunking capabilities to my Python project.
-Add the langchain-text-splitters package to requirements.txt.
+I need to add text chunking capabilities to my JavaScript project.
+Add the @langchain/textsplitters package to package.json.
 Show me the import statements I'll need for text splitting in LangChain.
 ```
 
-**What to Look For:** The langchain-text-splitters package should be added to requirements.txt. You'll import various splitters like CharacterTextSplitter, RecursiveCharacterTextSplitter, and MarkdownHeaderTextSplitter.
+**What to Look For:** The @langchain/textsplitters package should be added to package.json. You'll import various splitters like CharacterTextSplitter, RecursiveCharacterTextSplitter, and MarkdownHeaderTextSplitter.
 
 **Documentation Reference:**
-- [LangChain Text Splitters](https://python.langchain.com/v0.2/docs/how_to/#text-splitters)
-- [Text Splitters API Reference](https://reference.langchain.com/python/langchain_text_splitters/)
-- [Document Transformers](https://python.langchain.com/v0.2/docs/integrations/document_transformers/)
+- [LangChain Text Splitters](https://js.langchain.com/docs/how_to/#text-splitters)
+- [Text Splitters API Reference](https://js.langchain.com/docs/modules/data_connection/document_transformers/)
+- [Document Transformers](https://js.langchain.com/docs/integrations/document_transformers/)
 
 ---
 
@@ -46,20 +46,19 @@ Before implementing different strategies, create a generic function to handle ch
 
 **Prompt 2: Create Chunked Document Loading Function**
 ```
-Create a function called load_document_with_chunks that:
-- Takes parameters: vector_store, file_path, and a list of LangChain Document objects (chunks)
+Create an async function called loadDocumentWithChunks that:
+- Takes parameters: vectorStore, filePath, and an array of LangChain Document objects (chunks)
 - Loops through each chunk with its index
 - For each chunk:
   - Updates the chunk's metadata to include:
-    - 'fileName': The file name plus " (Chunk X/Total)"
-    - 'createdAt': Current timestamp using datetime.now().isoformat()
-    - 'chunkIndex': The chunk number
-  - Adds the chunk to the vector store using vector_store.add_documents()
+    - fileName: The file name plus " (Chunk X/Total)"
+    - createdAt: Current timestamp using new Date().toISOString()
+    - chunkIndex: The chunk number
+  - Adds the chunk to the vector store using await vectorStore.addDocuments()
 - Prints progress for each chunk processed
 - Returns the total number of chunks stored
 
-Include error handling using try-except.
-Import datetime from the datetime module.
+Include error handling using try-catch.
 ```
 
 **What to Look For:** This function will handle the common logic of processing chunks, regardless of which chunking strategy you use.
@@ -72,26 +71,27 @@ The simplest strategy: split text every N characters.
 
 **Prompt 3: Add Fixed-Size Chunking**
 ```
-Create a function that:
-- Reads the EmployeeHandbook.md file using open() and read()
-- Uses CharacterTextSplitter from langchain_text_splitters with:
-  - chunk_size=1000
-  - chunk_overlap=0
-  - separator=" " (split on spaces to avoid breaking words)
-- Calls create_documents([text]) to generate Document objects
-- Passes the chunks to load_document_with_chunks
+Create an async function that:
+- Reads the EmployeeHandbook.md file using fs.readFileSync() with 'utf-8' encoding
+- Uses CharacterTextSplitter from @langchain/textsplitters with:
+  - chunkSize: 1000
+  - chunkOverlap: 0
+  - separator: " " (split on spaces to avoid breaking words)
+- Calls createDocuments([text]) to generate Document objects
+- Passes the chunks to loadDocumentWithChunks
 - Prints statistics: number of chunks created, average chunk size
 
-Import CharacterTextSplitter from langchain_text_splitters.
+Import CharacterTextSplitter from '@langchain/textsplitters'.
+Import fs from 'fs'.
 ```
 
 **What to Look For:** The document should be split into multiple chunks of roughly equal size.
 
 **Documentation:**
-- [CharacterTextSplitter API](https://reference.langchain.com/python/langchain_text_splitters/)
-- [Python File I/O](https://docs.python.org/3/tutorial/inputoutput.html#reading-and-writing-files)
+- [CharacterTextSplitter API](https://js.langchain.com/docs/modules/data_connection/document_transformers/)
+- [Node.js File System](https://nodejs.org/api/fs.html)
 
-**Test Point**: Run the application using `python app.py`. You should see the EmployeeHandbook successfully split and loaded.
+**Test Point**: Run the application using `node app.js`. You should see the EmployeeHandbook successfully split and loaded.
 
 **Expected Output:**
 ```
@@ -111,15 +111,15 @@ A more semantic approach: split on paragraph boundaries while respecting size li
 
 **Prompt 4: Add Paragraph Chunking**
 ```
-Create a function to chunk by paragraphs:
+Create an async function to chunk by paragraphs:
 - Read the EmployeeHandbook.md file
-- Use RecursiveCharacterTextSplitter from langchain_text_splitters with:
-  - chunk_size=1500
-  - chunk_overlap=0
-  - separators=["\n\n", "\n", " ", ""] (splits on paragraphs first, then newlines, then spaces)
+- Use RecursiveCharacterTextSplitter from @langchain/textsplitters with:
+  - chunkSize: 1500
+  - chunkOverlap: 0
+  - separators: ["\n\n", "\n", " ", ""] (splits on paragraphs first, then newlines, then spaces)
 - This splitter tries to keep paragraphs together while respecting the size limit
-- Call create_documents([text]) to generate chunks
-- Pass the chunks to load_document_with_chunks
+- Call createDocuments([text]) to generate chunks
+- Pass the chunks to loadDocumentWithChunks
 - Compare the number of chunks and their sizes to fixed-size chunking
 
 Print a comparison showing:
@@ -127,14 +127,14 @@ Print a comparison showing:
 - Size of smallest and largest chunks
 - How many chunks start with a newline (indicating paragraph preservation)
 
-Import RecursiveCharacterTextSplitter from langchain_text_splitters.
+Import RecursiveCharacterTextSplitter from '@langchain/textsplitters'.
 ```
 
 **What to Look For:** Chunks should align with document structure, making them more semantically coherent.
 
 **Documentation:**
-- [RecursiveCharacterTextSplitter API](https://reference.langchain.com/python/langchain_text_splitters/)
-- [Text Splitters How-to Guide](https://python.langchain.com/v0.2/docs/how_to/#text-splitters)
+- [RecursiveCharacterTextSplitter API](https://js.langchain.com/docs/modules/data_connection/document_transformers/)
+- [Text Splitters How-to Guide](https://js.langchain.com/docs/how_to/#text-splitters)
 
 **Test Point**: Run this strategy and compare results with fixed-size chunking.
 
@@ -146,27 +146,27 @@ For markdown documents, respect the document structure (headings, sections).
 
 **Prompt 5: Add Markdown Structure Chunking**
 ```
-Create a function to chunk markdown by structure:
+Create an async function to chunk markdown by structure:
 - Read the EmployeeHandbook.md file
-- Use MarkdownHeaderTextSplitter from langchain_text_splitters with:
-  - headers_to_split_on=[("#", "Header 1"), ("##", "Header 2"), ("###", "Header 3")]
+- Use MarkdownHeaderTextSplitter from @langchain/textsplitters with:
+  - headersToSplitOn: [{"#": "Header 1"}, {"##": "Header 2"}, {"###": "Header 3"}]
 - This splits the document on markdown headers, preserving structure
 - Then apply RecursiveCharacterTextSplitter with:
-  - chunk_size=1500
-  - chunk_overlap=200
+  - chunkSize: 1500
+  - chunkOverlap: 200
 - The overlap helps preserve context across chunk boundaries
-- Pass the chunks to load_document_with_chunks
+- Pass the chunks to loadDocumentWithChunks
 - Print examples of the first 3 chunks showing how headings are preserved in metadata
 
-Import MarkdownHeaderTextSplitter from langchain_text_splitters.
+Import MarkdownHeaderTextSplitter from '@langchain/textsplitters'.
 Note: The header information will be stored in each chunk's metadata.
 ```
 
 **What to Look For:** Chunks should preserve markdown structure, keeping headings with their content. Check the metadata for header information.
 
 **Documentation:**
-- [MarkdownHeaderTextSplitter API](https://reference.langchain.com/python/langchain_text_splitters/)
-- [Markdown Splitting Guide](https://python.langchain.com/v0.2/docs/how_to/#text-splitters)
+- [MarkdownHeaderTextSplitter API](https://js.langchain.com/docs/modules/data_connection/document_transformers/)
+- [Markdown Splitting Guide](https://js.langchain.com/docs/how_to/#text-splitters)
 
 **Why Overlap Matters:** When you split "...benefits include health insurance. \n\n Health insurance covers..." at the paragraph break, overlap ensures both chunks contain "health insurance" context, improving search results.
 
@@ -178,18 +178,18 @@ Now that you have multiple strategies implemented, compare their effectiveness.
 
 **Prompt 6: Create Strategy Comparison**
 ```
-Create a function that runs all three chunking strategies on EmployeeHandbook.md and compares:
+Create an async function that runs all three chunking strategies on EmployeeHandbook.md and compares:
 - Total number of chunks created
 - Average chunk size in characters
 - Minimum and maximum chunk sizes
 - Number of chunks that have header metadata (for markdown-aware)
 - Estimated token count per chunk (rough estimate: chars / 4)
 
-Display the results in a formatted table using Python string formatting:
+Display the results in a formatted table using JavaScript template literals:
 Strategy | Chunks | Avg Size | Min Size | Max Size | Headers
 Display this comparison before actually loading any chunks into the vector store.
 
-Use f-strings or format() for table formatting.
+Use template literals for table formatting.
 ```
 
 **What to Look For:** You'll see how different strategies create different chunk distributions.
@@ -217,8 +217,8 @@ Based on your comparison, select the best strategy for the Employee Handbook.
 ```
 Based on the comparison results, implement the markdown-aware chunking strategy as the final solution.
 Update the document loading code to:
-1. Recreate the vector store (InMemoryVectorStore) to clear previous data
-2. Load HealthInsuranceBrochure.md as-is using the load_document function from Lab 3 (it's small enough)
+1. Recreate the vector store (MemoryVectorStore) to clear previous data
+2. Load HealthInsuranceBrochure.md as-is using the loadDocument function from Lab 3 (it's small enough)
 3. Load EmployeeHandbook.md using markdown-aware chunking with overlap
 4. Display a summary showing:
    - Total number of documents/chunks in the vector store
@@ -226,7 +226,7 @@ Update the document loading code to:
    - Number of chunks per file
 
 Then add the interactive search loop from Lab 2 back in so users can search across both documents.
-Use input() for user queries and display results with similarity scores and chunk information.
+Use readline or prompt-sync for user queries and display results with similarity scores and chunk information.
 ```
 
 **What to Look For:** Your application should now handle both small documents (load as-is) and large documents (chunk first) intelligently.
@@ -266,7 +266,7 @@ Now test whether chunking improves search quality.
 ### Expected Output
 
 ```
-🤖 Python LangChain Agent Starting...
+🤖 JavaScript LangChain Agent Starting...
 
 === Loading Documents into Vector Database ===
 
