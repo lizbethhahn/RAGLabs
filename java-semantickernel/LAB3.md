@@ -31,7 +31,6 @@ Please rename it to DocumentRecord and update it to include:
 - embedding (List<Float>) with @VectorStoreRecordVector and dimension 1536
 - createdAt (OffsetDateTime) with @VectorStoreRecordData
 
-Include a constructor with all fields and getter methods.
 Also update any references to SentenceRecord throughout the code to use DocumentRecord instead.
 ```
 
@@ -67,18 +66,18 @@ Now you'll create a function to read a markdown file and store it in the vector 
 ```
 Create a static method called loadDocumentAsync that:
 - Takes parameters: the embedding service, the vector store collection, and a file path (String)
-- Reads all text from the file using Files.readString(Paths.get(filePath))
+- Reads all text from the file
 - Generates an embedding for the entire document content
 - Creates a new DocumentRecord with:
-  - id: A UUID using UUID.randomUUID().toString()
-  - fileName: The file name from the path (use Paths.get(filePath).getFileName().toString())
+  - id: A UUID
+  - fileName: The file name from the path
   - content: The full document text
   - embedding: The generated embedding
-  - createdAt: Current UTC time using OffsetDateTime.now(ZoneOffset.UTC)
-- Upserts the record to the collection using upsertAsync
+  - createdAt: Current UTC time
+- Upserts the record to the collection
 - Prints a success message with the filename and content length
 
-Add error handling for file not found and other exceptions using try-catch.
+Add error handling for file not found and other exceptions.
 ```
 
 **What to Look For:** This method encapsulates the logic for loading a single document into the vector database.
@@ -157,7 +156,7 @@ In the loadDocumentAsync method's catch block, enhance the error handling to:
   "⚠️ This document is too large to embed as a single chunk."
   "Token limit exceeded. The embedding model can only process up to 8,191 tokens at once."
   "Solution: The document needs to be split into smaller chunks."
-- Otherwise, display the regular error message using e.getMessage()
+- Otherwise, display the regular error message
 ```
 
 **Test Again**: Run `mvn clean compile exec:java` one more time.

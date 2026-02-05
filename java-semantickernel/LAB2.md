@@ -61,9 +61,7 @@ Now you need to create an instance of the VolatileVectorStore and get a collecti
 
 **Prompt 2: Create and Configure VolatileVectorStore**
 ```
-After building the kernel and getting the embedding service, create a new VolatileVectorStore instance.
-Then get a collection of SentenceRecord from the vector store with the collection name "sentences".
-Create the collection if it doesn't exist using createCollectionIfNotExistsAsync.
+After building the kernel and getting the embedding service, create a new VolatileVectorStore instance then obtain a collection for SentenceRecord named "sentences".
 ```
 
 **What to Look For:** The code should create a vector store instance and obtain a collection that you can add records to and search through.
@@ -82,10 +80,10 @@ Replace the current embedding generation code with the following logic:
 3. For each sentence:
    - Generate its embedding using the embedding service
    - Create a new SentenceRecord with:
-     - id: A UUID converted to string using UUID.randomUUID().toString()
+     - id: A UUID converted to string
      - text: The original sentence
      - embedding: The generated embedding vector
-     - createdAt: The current UTC time using OffsetDateTime.now(ZoneOffset.UTC)
+     - createdAt: The current UTC time
    - Add the record to the list
 4. Use the collection's upsertBatchAsync method to store all records
 5. Print a confirmation message showing how many sentences were stored
@@ -109,7 +107,7 @@ Create a new static method called searchSentencesAsync that:
 - Performs a vector search on the collection using vectorizedSearchAsync with the query embedding
 - Returns the top K most similar results
 - Each result should include the sentence text and its similarity score
-- Print the results with formatting showing rank, similarity score (formatted to 4 decimals using System.out.printf), and the sentence text
+- Print the results with formatting showing rank, similarity score (formatted to 4 decimals), and the sentence text
 ```
 
 **What to Look For:** GitHub Copilot should create a method that performs vector similarity search and displays results ranked by relevance.
@@ -123,15 +121,14 @@ Finally, make your application interactive so users can type queries and see res
 **Prompt 5: Add Interactive Search CLI**
 ```
 After storing the sentences, add an interactive loop that:
-1. Create a Scanner to read user input from System.in
-2. Display a header "=== Semantic Search ===" 
-3. Prompts the user to "Enter a search query (or 'quit' to exit): "
-4. Read the user's input using scanner.nextLine()
-5. If the user types "quit" or "exit", break the loop
-6. If the input is empty or whitespace only, continue to the next iteration
-7. Otherwise, call the searchSentencesAsync method with the user's query
-8. Display the results
-9. Repeat the loop
+1. Displays a header "=== Semantic Search ===" 
+2. Prompts the user to "Enter a search query (or 'quit' to exit): "
+3. Reads the user's input
+4. If the user types "quit" or "exit", break the loop
+5. If the input is empty, continue to the next iteration
+6. Otherwise, call the searchSentencesAsync method with the user's query
+7. Display the results
+8. Repeat the loop
 
 Include helpful messages and formatting to make the CLI user-friendly.
 ```

@@ -69,7 +69,7 @@ Add code to calculate and display the cosine similarity between:
 - Sentence 2 and Sentence 3
 - Sentence 3 and Sentence 1
 
-Use the cosineSimilarity() method and format the output to 4 decimal places using System.out.printf
+Use the cosineSimilarity() method and format the output to 4 decimal places
 Display results with clear labels showing which sentences are being compared
 ```
 

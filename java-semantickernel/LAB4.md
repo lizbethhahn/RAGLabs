@@ -52,16 +52,16 @@ Create a static method called loadDocumentWithChunksAsync that:
 - For each chunk:
   - Generates an embedding for the chunk text
   - Creates a DocumentRecord with:
-    - id: A UUID using UUID.randomUUID().toString()
+    - id: A UUID
     - fileName: The file name plus " (Chunk X/Total)" 
     - content: The chunk text
     - embedding: The generated embedding
-    - createdAt: Current UTC time using OffsetDateTime.now(ZoneOffset.UTC)
+    - createdAt: Current UTC time
   - Upserts the record to the collection
 - Prints progress for each chunk processed
 - Returns the total number of chunks stored
 
-Include error handling for embedding failures using try-catch.
+Include error handling for embedding failures.
 ```
 
 **What to Look For:** This method will handle the common logic of processing chunks, regardless of which chunking strategy you use.
@@ -75,13 +75,11 @@ The simplest strategy: split text every N characters.
 **Prompt 3: Add Fixed-Size Chunking**
 ```
 Create a method that:
-- Reads the EmployeeHandbook.md file using Files.readString(Paths.get(filePath))
+- Reads the EmployeeHandbook.md file
 - Implements a simple text splitter that splits the text into chunks of approximately 1000 characters
 - Ensure chunks don't break in the middle of words (find the last space before the limit)
 - Passes the chunks to loadDocumentWithChunksAsync
 - Prints statistics: number of chunks created, average chunk size
-
-Add appropriate import statements for java.nio.file.Files and java.nio.file.Paths.
 ```
 
 **What to Look For:** The document should be split into multiple chunks of roughly equal size.
@@ -112,9 +110,9 @@ A more semantic approach: split on paragraph boundaries while respecting size li
 ```
 Create a method to chunk by paragraphs:
 - Read the EmployeeHandbook.md file
-- Split the text on double newlines ("\n\n") to get paragraphs using String.split("\n\n")
-- Group paragraphs together until reaching approximately 1500 characters per chunk
-- Ensure no chunk exceeds 2000 characters (split large paragraphs if needed)
+- Split the text on double newlines ("\n\n") to get paragraphs
+- Group paragraphs together until reaching approximately 7000 characters per chunk
+- Ensure no chunk exceeds 8000 characters (split large paragraphs if needed)
 - Pass the chunks to loadDocumentWithChunksAsync
 - Compare the number of chunks and their sizes to fixed-size chunking
 
@@ -130,7 +128,24 @@ Print a comparison showing:
 - [Vector Store Connectors Overview](https://learn.microsoft.com/en-us/semantic-kernel/concepts/vector-store-connectors/)
 - [Data Model Definition](https://learn.microsoft.com/en-us/semantic-kernel/concepts/vector-store-connectors/defining-your-data-model)
 
-**Test Point**: Run this strategy and compare results with fixed-size chunking.
+
+### Test Step: Run and Validate
+NOTE: Throttling will pause execution every 15 chunks. So it takes a while to run.
+
+Before implementing markdown-aware chunking, run the app and validate the paragraph-based ingestion worked. From the repository root run:
+
+```powershell
+mvn clean compile exec:java
+```
+
+While the interactive CLI is running, try these example questions (answers should be present in the loaded documents):
+
+- "What health insurance benefits are offered by the company?"
+- "How do I enroll in benefits and what are the eligibility rules?"
+- "What is the vacation / PTO policy for full-time employees?"
+- "Does the company support remote work and what are the guidelines?"
+
+The app should return matching document chunks ranked by relevance.
 
 ---
 
@@ -143,13 +158,13 @@ For markdown documents, respect the document structure (headings, sections).
 Create a method to chunk markdown by structure:
 - Read the EmployeeHandbook.md file
 - Implement markdown-aware splitting that respects document structure (headings, sections)
-- Set chunk size to 1500 characters with 200 character overlap between chunks
+- Set chunk size to 1000 characters with 100 character overlap between chunks
 - The overlap helps preserve context across chunk boundaries
 - Pass the chunks to loadDocumentWithChunksAsync
 - Print examples of the first 3 chunks showing how headings are preserved
 
 Add logic to identify if chunks start with markdown headings (lines starting with #).
-Implement overlap by including the last 200 characters of the previous chunk at the start of the next chunk.
+Implement overlap by including the last 100 characters of the previous chunk at the start of the next chunk.
 ```
 
 **What to Look For:** Chunks should preserve markdown structure, keeping headings with their content.
@@ -162,133 +177,189 @@ Implement overlap by including the last 200 characters of the previous chunk at 
 
 ---
 
-### Step 6: Compare Chunking Strategies
+### Step 6: Adding in an Agent to complete the RAG pattern!
 
-Now that you have multiple strategies implemented, compare their effectiveness.
+Now that you have implemented chunking and vector search, let's complete the **Retrieval-Augmented Generation (RAG)** pattern by creating an AI agent that can search your documents and answer questions using the retrieved context.
 
-**Prompt 6: Create Strategy Comparison**
-```
-Create a method that runs all three chunking strategies on EmployeeHandbook.md and compares:
-- Total number of chunks created
-- Average chunk size in characters
-- Minimum and maximum chunk sizes
-- Number of chunks that start with markdown headings
-- Estimated token count per chunk (rough estimate: chars / 4)
+Instead of just returning raw chunks from the vector database, an agent can:
+1. Search the vector database for relevant chunks
+2. Use those chunks as context when answering the user's question
+3. Generate a natural language response based on the retrieved information
 
-Display the results in a formatted table using System.out.printf showing:
-Strategy | Chunks | Avg Size | Min Size | Max Size | Headings
-Display this comparison before actually loading any chunks.
-```
-
-**What to Look For:** You'll see how different strategies create different chunk distributions.
-
-**Test Point**: Run the comparison and observe the differences.
-
-**Expected Output (example):**
-```
-=== Chunking Strategy Comparison ===
-
-Strategy              | Chunks | Avg Size | Min Size | Max Size | Headings
---------------------- | ------ | -------- | -------- | -------- | --------
-Fixed Size           |   15   |  1,247   |   1,100  |  1,350   |    3
-Paragraph-Based      |   12   |  1,556   |    800   |  2,000   |    8
-Markdown-Aware       |   18   |  1,039   |    650   |  1,500   |   14
-```
+You'll implement this step-by-step by prompting GitHub Copilot to help you create the necessary components.
 
 ---
 
-### Step 7: Choose and Implement Your Final Strategy
+**Sub-Step 6.1: Create a Kernel Plugin with a Search Function**
 
-Based on your comparison, select the best strategy for the Employee Handbook.
+The first step is to create a plugin function that the AI agent can call to search your document collection.
 
-**Prompt 7: Implement Final Chunking Solution**
+**Prompt 6.1: Create SearchDocuments Plugin Function**
 ```
-Based on the comparison results, implement the markdown-aware chunking strategy as the final solution.
-Update the document loading code to:
-1. Clear the vector store collection
-2. Load HealthInsuranceBrochure.md as-is (it's small enough)
-3. Load EmployeeHandbook.md using markdown-aware chunking with overlap
-4. Display a summary of what's in the vector database
+Create a new class called DocumentSearchPlugin with a @KernelFunction method called searchDocuments.
 
-Then add the interactive search from Lab 2 back in so users can search across both documents.
+The method should:
+- Accept a String parameter called "query" with @Description annotation
+- Use the embeddingService and documentsCollection (passed via constructor)
+- Call the existing searchDocumentsAsync method to perform the vector search
+- Return a formatted String containing the top 3 search results
+- Each result should include the chunk content and score
+- Format the results as: "Result 1 (Score: X.XXXX): [content]\n\nResult 2..."
+
+Add @Description annotations to help the AI understand when to use this function:
+- Class description: "Searches the company document repository for relevant information"
+- Method description: "Searches for documents related to the given query and returns the most relevant matches"
+- Parameter description: "The search query or question to find relevant documents for"
+
+Note: You'll need to make the searchDocumentsAsync method accessible to this plugin class.
 ```
 
-**What to Look For:** Your application should now handle both small documents (load as-is) and large documents (chunk first) intelligently.
+**What to Look For:** 
+- The plugin should use Semantic Kernel's plugin architecture with `@KernelFunction` and `@Description` annotations
+- The search function should return formatted results that provide context to the LLM
+- Consider making `searchDocumentsAsync` static or accessible to the plugin class
+
+**Documentation:**
+- [Creating Semantic Kernel Plugins](https://learn.microsoft.com/en-us/semantic-kernel/concepts/plugins/)
+- [KernelFunction Annotation](https://github.com/microsoft/semantic-kernel/tree/main/java)
 
 ---
 
-### Step 8: Test Semantic Search Across Chunks
+**Sub-Step 6.2: Add Chat Completion Service**
 
-Now test whether chunking improves search quality.
+Next, add a chat completion service that will power the conversational agent.
 
-**Test Queries to Try:**
+**Prompt 6.2: Add Chat Completion to Kernel**
+```
+Update the kernel builder to add a chat completion service:
+- Use OpenAIChatCompletion with model "gpt-4o"
+- Use the same openAIAsyncClient that was created for embeddings
+- The service should be added to the builder before building the kernel
 
-**Query 1: "health insurance benefits"**
-- Should return relevant chunks from both documents
-- Notice if chunks from EmployeeHandbook provide more specific details than the Brochure
+After building the kernel, get the ChatCompletionService from the kernel.
+```
 
-**Query 2: "vacation policy"**
-- Should return chunks from EmployeeHandbook that discuss vacation/PTO
-- Observe which chunks are most relevant
+**What to Look For:**
+- The chat completion service should use GitHub Models API (same endpoint as embeddings)
+- Model "gpt-4o" provides good balance of quality and speed
 
-**Query 3: "dental coverage options"**
-- Should return chunks from both documents
-- Notice how overlap helps - you might see adjacent chunks that both mention dental
-
-**Query 4: "remote work policy"**
-- Should return chunks discussing remote/hybrid work from the Handbook
-- Test if context is preserved within the chunk
-
-**Observations to Make:**
-1. Do chunks contain enough context to be useful standalone?
-2. Are answers spread across multiple chunks? (This shows why RAG systems retrieve multiple chunks)
-3. Does overlap help or create duplicate results?
-4. Are some chunks too small or too large?
+**Documentation:**
+- [Chat Completion Service](https://learn.microsoft.com/en-us/semantic-kernel/concepts/ai-services/chat-completion/)
 
 ---
 
-### Expected Output
+**Sub-Step 6.3: Register the Plugin with the Kernel**
 
+Now register your search plugin so the agent can use it.
+
+**Prompt 6.3: Register DocumentSearchPlugin**
 ```
-🤖 Java Semantic Kernel Agent Starting...
+Create an instance of DocumentSearchPlugin, passing the embeddingService and documentsCollection to the constructor.
 
-=== Loading Documents into Vector Database ===
+Add the plugin to the kernel using KernelPlugin.createFromObject() with the plugin name "DocumentSearch".
+Register the plugin with kernel using addPlugin().
 
-Loading HealthInsuranceBrochure.md...
-✅ Successfully loaded HealthInsuranceBrochure.md as single document (2,456 characters)
-
-Loading EmployeeHandbook.md with markdown-aware chunking...
-📄 Creating chunks with 1500 character max and 200 character overlap...
-Processing chunk 1/18 (Section: Introduction)...
-Processing chunk 2/18 (Section: Benefits Overview)...
-...
-✅ Successfully loaded 18 chunks from EmployeeHandbook.md
-
-📊 Vector Database Summary:
-- Total records: 19
-- Documents: 2 (HealthInsuranceBrochure.md, EmployeeHandbook.md)
-- Chunks: 18 from EmployeeHandbook.md
-
-=== Semantic Search ===
-
-Enter a search query (or 'quit' to exit): health insurance benefits
-
-🔍 Search Results for "health insurance benefits":
-
-1. [Score: 0.8923] [HealthInsuranceBrochure.md] TechCorp Solutions Health & Wellness Benefits...
-2. [Score: 0.8756] [EmployeeHandbook.md (Chunk 3/18)] ## Health Insurance Plans\n\nTechCorp offers comprehensive...
-3. [Score: 0.8234] [EmployeeHandbook.md (Chunk 4/18)] ### Enrollment and Eligibility\n\nAll full-time employees...
-
-Enter a search query (or 'quit' to exit): remote work policy
-
-🔍 Search Results for "remote work policy":
-
-1. [Score: 0.9012] [EmployeeHandbook.md (Chunk 12/18)] ## Remote Work and Hybrid Options\n\nTechCorp supports...
-2. [Score: 0.8445] [EmployeeHandbook.md (Chunk 13/18)] Employees working remotely are expected to maintain...
-3. [Score: 0.7823] [EmployeeHandbook.md (Chunk 12/18)] ...equipment and internet connectivity requirements...
+Print a confirmation message showing that the plugin was registered.
 ```
+
+**What to Look For:**
+- The plugin should be instantiated with the required dependencies
+- Plugin name should be descriptive and match the functionality
 
 ---
+
+**Sub-Step 6.4: Replace the Interactive Search Loop with Agent Chat**
+
+Finally, replace the simple vector search CLI with an agent-powered chat interface.
+
+**Prompt 6.4: Create Agent Chat Loop**
+```
+Replace the existing semantic search while loop with a new chat interface that:
+
+1. Creates a ChatHistory to track the conversation
+2. Adds a system message explaining the agent's role:
+   "You are a helpful assistant that answers questions about company policies, benefits, and procedures. 
+    Use the searchDocuments function to find relevant information from the company documents before answering. 
+    Always cite which document chunks you used in your answer."
+3. In a loop:
+   - Prompt the user: "You: "
+   - Read user input
+   - Exit on "quit" or "exit"
+   - Add the user message to chat history
+   - Get a response from the chat completion service with automatic function calling enabled
+   - The agent should automatically call searchDocuments when needed
+   - Print the assistant's response
+   - Add the assistant's response to chat history
+
+The agent should automatically call the searchDocuments function when needed to answer questions.
+
+Print clear indicators showing:
+- When the agent is calling the search function
+- What query it's searching for
+- The final response to the user
+```
+
+NOTE: You may need to modify the agent to remove logging of searches. I had to.
+
+**What to Look For:**
+- The agent should automatically invoke the searchDocuments function when it needs information
+- Conversation history should be maintained across multiple turns
+- The agent's responses should reference the document chunks it retrieved
+
+**Documentation:**
+- [Auto Function Calling](https://learn.microsoft.com/en-us/semantic-kernel/concepts/ai-services/chat-completion/function-calling/)
+- [Chat History](https://learn.microsoft.com/en-us/semantic-kernel/concepts/ai-services/chat-completion/)
+
+---
+
+**Sub-Step 6.5: Test the Agent**
+
+Run your application and test the agent-powered RAG system.
+
+**Example Conversation:**
+```
+You: What health insurance benefits does the company offer?
+[Agent calls searchDocuments("health insurance benefits")]
+Agent: Based on the company documentation, we offer comprehensive health insurance...
+
+You: How do I enroll?
+[Agent calls searchDocuments("health insurance enrollment")]
+Agent: To enroll in health insurance benefits, you need to...
+
+You: What about dental coverage?
+[Agent calls searchDocuments("dental coverage")]
+Agent: According to the benefits documentation...
+```
+
+**What to Look For:**
+- The agent should automatically search documents when it needs information
+- Responses should be natural and conversational, not just returning raw chunks
+- The agent should maintain context across the conversation
+- The agent should cite which document chunks it used
+
+---
+
+**Discussion: RAG vs. Simple Search**
+
+After completing Step 6, compare the agent-powered RAG approach to the simple vector search from earlier steps:
+
+**Simple Vector Search (Steps 1-5):**
+- Returns raw document chunks
+- User must read through chunks to find the answer
+- No synthesis or summarization
+- Limited to exact matches
+
+**Agent-Powered RAG (Step 6):**
+- Automatically searches when needed
+- Synthesizes information from multiple chunks
+- Provides natural language answers
+- Can handle follow-up questions with conversation context
+- Cites sources for transparency
+
+This is the complete RAG pattern used in production AI applications!
+
+---
+
 
 ### Discussion Questions
 
