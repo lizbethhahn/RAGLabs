@@ -25,11 +25,11 @@ First, you need to modify your record structure to handle documents instead of s
 ```
 I need to modify the SentenceRecord class to work with documents instead of sentences.
 Please rename it to DocumentRecord and update it to include:
-- Id (string) with [VectorStoreRecordKey]
-- FileName (string) with [VectorStoreRecordData] - to track which file this came from
-- Content (string) with [VectorStoreRecordData] - the actual document text
-- Embedding (ReadOnlyMemory<float>) with [VectorStoreRecordVector] and dimension 1536
-- CreatedAt (DateTimeOffset) with [VectorStoreRecordData]
+- Id (string) with [VectorStoreKey]
+- FileName (string) with [VectorStoreData] - to track which file this came from
+- Content (string) with [VectorStoreData] - the actual document text
+- Embedding (ReadOnlyMemory<float>) with [VectorStoreVector] and dimension 1536
+- CreatedAt (DateTimeOffset) with [VectorStoreData]
 
 Also update any references to SentenceRecord throughout the code to use DocumentRecord instead.
 ```

@@ -35,10 +35,10 @@ Before storing data in a vector database, you need to define what each "record" 
 **Prompt 1: Create a Data Model Class**
 ```
 Create a C# record class called SentenceRecord with the following properties:
-- Id of type string with [VectorStoreRecordKey] attribute
-- Text of type string with [VectorStoreRecordData] attribute
-- Embedding of type ReadOnlyMemory<float> with [VectorStoreRecordVector] attribute and dimension of 1536
-- CreatedAt of type DateTimeOffset with [VectorStoreRecordData] attribute
+- Id of type string with [VectorStoreKey] attribute
+- Text of type string with [VectorStoreData] attribute
+- Embedding of type ReadOnlyMemory<float> with [VectorStoreVector] attribute and dimension of 1536
+- CreatedAt of type DateTimeOffset with [VectorStoreData] attribute
 
 Include the necessary using statements for Microsoft.SemanticKernel.Data attributes.
 ```
@@ -57,14 +57,14 @@ Now you need to create an instance of the VolatileVectorStore and get a collecti
 - [Vector Store Connectors Package](https://www.nuget.org/packages/Microsoft.SemanticKernel.Connectors.InMemory/) - You may need to install this NuGet package
 - [Out-of-the-box Vector Store Connectors](https://learn.microsoft.com/en-us/semantic-kernel/concepts/vector-store-connectors/out-of-the-box-connectors/) - Overview of available vector store implementations
 
-**Prompt 2: Create and Configure VolatileVectorStore**
+**Prompt 2: Register and Obtain an In-Memory Vector Store**
 ```
-After building the kernel and getting the embedding service, create a new VolatileVectorStore instance.
-Then get a collection of SentenceRecord from the vector store with the collection name "sentences".
-Create the collection if it doesn't exist using CreateCollectionIfNotExistsAsync.
+After building the kernel and getting the embedding service, register an in-memory vector store with the kernel builder then obtain a collection for `SentenceRecord` named "sentences".
 ```
 
-**What to Look For:** The code should create a vector store instance and obtain a collection that you can add records to and search through.
+**What to Look For:** The code should create a vector store instance and obtain a collection that you can add records to and search through. 
+
+NOTE: This step will probably mess up, you will have to use documentation to get it right since this code has changed a lot.
 
 ---
 
@@ -104,7 +104,7 @@ Now comes the powerful part - searching! You'll create a function that takes a u
 Create a new async method called SearchSentencesAsync that:
 - Takes parameters: the embedding service, the vector store collection, a search query string, and a top K results count (default to 3)
 - Generates an embedding for the search query
-- Performs a vector search on the collection using VectorizedSearchAsync with the query embedding
+- Performs a vector search on the collection using SearchAsync with the query embedding
 - Returns the top K most similar results
 - Each result should include the sentence text and its similarity score
 - Print the results with formatting showing rank, similarity score (formatted to 4 decimals), and the sentence text
@@ -135,6 +135,15 @@ Include helpful messages and formatting to make the CLI user-friendly.
 
 **What to Look For:** Your application should now have an interactive search interface where users can enter queries and see similar sentences.
 
+Reset your sentences to the original list:
+```csharp
+string[] sentences = new[]
+{
+    "The canine barked loudly.",
+    "The dog made a noise.",
+    "The electron spins rapidly."
+};
+```
 ---
 
 ### Step 6: Test Your Semantic Search
