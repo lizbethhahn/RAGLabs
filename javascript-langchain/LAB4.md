@@ -80,6 +80,7 @@ Create an async function that:
 - Calls createDocuments([text]) to generate Document objects
 - Passes the chunks to loadDocumentWithChunks
 - Prints statistics: number of chunks created, average chunk size
+- Update the code to call `load_with_fixed_size_chunking` instead of `load_document` so the EmployeeHandbook is split before being added to the vector store.
 
 Import CharacterTextSplitter from '@langchain/textsplitters'.
 Import fs from 'fs'.
@@ -121,6 +122,7 @@ Create an async function to chunk by paragraphs:
 - Call createDocuments([text]) to generate chunks
 - Pass the chunks to loadDocumentWithChunks
 - Compare the number of chunks and their sizes to fixed-size chunking
+- Update the code to call the new method so the EmployeeHandbook is split in this new method.
 
 Print a comparison showing:
 - Total chunks created
@@ -136,7 +138,7 @@ Import RecursiveCharacterTextSplitter from '@langchain/textsplitters'.
 - [RecursiveCharacterTextSplitter API](https://js.langchain.com/docs/modules/data_connection/document_transformers/)
 - [Text Splitters How-to Guide](https://js.langchain.com/docs/how_to/#text-splitters)
 
-**Test Point**: Run this strategy and compare results with fixed-size chunking.
+**Do not test!**: Do not run at this point, these are just exploration functions.
 
 ---
 
@@ -156,10 +158,9 @@ Create an async function to chunk markdown by structure:
   - chunkOverlap: 200
 - The overlap helps preserve context across chunk boundaries
 - Pass the chunks to loadDocumentWithChunks
-- Print examples of the first 3 chunks showing how headings are preserved in metadata
+- Update the code to call the new method so the EmployeeHandbook is split in this new method.
 
 Import MarkdownHeaderTextSplitter from '@langchain/textsplitters'.
-Note: The header information will be stored in each chunk's metadata.
 ```
 
 **What to Look For:** Chunks should preserve markdown structure, keeping headings with their content. Check the metadata for header information.
@@ -170,143 +171,221 @@ Note: The header information will be stored in each chunk's metadata.
 
 **Why Overlap Matters:** When you split "...benefits include health insurance. \n\n Health insurance covers..." at the paragraph break, overlap ensures both chunks contain "health insurance" context, improving search results.
 
----
-
-### Step 6: Compare Chunking Strategies
-
-Now that you have multiple strategies implemented, compare their effectiveness.
-
-**Prompt 6: Create Strategy Comparison**
-```
-Create an async function that runs all three chunking strategies on EmployeeHandbook.md and compares:
-- Total number of chunks created
-- Average chunk size in characters
-- Minimum and maximum chunk sizes
-- Number of chunks that have header metadata (for markdown-aware)
-- Estimated token count per chunk (rough estimate: chars / 4)
-
-Display the results in a formatted table using JavaScript template literals:
-Strategy | Chunks | Avg Size | Min Size | Max Size | Headers
-Display this comparison before actually loading any chunks into the vector store.
-
-Use template literals for table formatting.
-```
-
-**What to Look For:** You'll see how different strategies create different chunk distributions.
-
-**Test Point**: Run the comparison and observe the differences.
-
-**Expected Output (example):**
-```
-=== Chunking Strategy Comparison ===
-
-Strategy              | Chunks | Avg Size | Min Size | Max Size | Headers
---------------------- | ------ | -------- | -------- | -------- | --------
-Fixed Size           |   15   |  1,247   |   1,100  |  1,350   |    N/A
-Paragraph-Based      |   12   |  1,556   |    800   |  2,000   |    N/A
-Markdown-Aware       |   18   |  1,039   |    650   |  1,500   |   14
-```
+**Do not test!**: Do not run at this point, these are just exploration functions.
 
 ---
 
-### Step 7: Choose and Implement Your Final Strategy
+### Step 6: Adding an Agent to Complete the RAG Pattern!
 
-Based on your comparison, select the best strategy for the Employee Handbook.
+Now that you have implemented chunking and vector search, let's complete the **Retrieval-Augmented Generation (RAG)** pattern by creating an AI agent that can search your documents and answer questions using the retrieved context.
 
-**Prompt 7: Implement Final Chunking Solution**
-```
-Based on the comparison results, implement the markdown-aware chunking strategy as the final solution.
-Update the document loading code to:
-1. Recreate the vector store (MemoryVectorStore) to clear previous data
-2. Load HealthInsuranceBrochure.md as-is using the loadDocument function from Lab 3 (it's small enough)
-3. Load EmployeeHandbook.md using markdown-aware chunking with overlap
-4. Display a summary showing:
-   - Total number of documents/chunks in the vector store
-   - Source files loaded
-   - Number of chunks per file
+Instead of just returning raw chunks from the vector database, an agent can:
+1. Search the vector database for relevant chunks
+2. Use those chunks as context when answering the user's question
+3. Generate a natural language response based on the retrieved information
 
-Then add the interactive search loop from Lab 2 back in so users can search across both documents.
-Use readline or prompt-sync for user queries and display results with similarity scores and chunk information.
-```
-
-**What to Look For:** Your application should now handle both small documents (load as-is) and large documents (chunk first) intelligently.
+You'll implement this step-by-step by prompting GitHub Copilot to help you create the necessary components.
 
 ---
 
-### Step 8: Test Semantic Search Across Chunks
+**Sub-Step 6.1: Create a Search Tool for the Agent**
 
-Now test whether chunking improves search quality.
+The first step is to create a LangChain tool that the AI agent can call to search your document collection.
 
-**Test Queries to Try:**
+**Prompt 6.1: Create Document Search Tool**
+```
+Create a function called createSearchTool that:
+- Takes vectorStore as a parameter
+- Uses the DynamicStructuredTool class from @langchain/core/tools
+- Creates a tool with:
+  - name: "search_documents"
+  - description: "Searches the company document repository for relevant information based on the given query. Use this to find information about company policies, benefits, and procedures."
+  - schema: z.object({ query: z.string().describe("The search query or question") })
+  - func: An async function that:
+    - Takes an object with a query property
+    - Calls vectorStore.similaritySearchWithScore(query, 3) to get top 3 results
+    - Formats results as: "Result 1 (Score: X.XXXX): [content]\n\nResult 2..."
+    - Returns the formatted string
+- Returns the tool
 
-**Query 1: "health insurance benefits"**
-- Should return relevant chunks from both documents
-- Notice if chunks from EmployeeHandbook provide more specific details than the Brochure
+Import DynamicStructuredTool from '@langchain/core/tools'.
+Import z from 'zod' for schema validation.
 
-**Query 2: "vacation policy"**
-- Should return chunks from EmployeeHandbook that discuss vacation/PTO
-- Observe which chunks are most relevant
+Note: DynamicStructuredTool allows you to create tools with typed inputs using Zod schemas.
+The description tells the agent when and how to use the tool.
+```
 
-**Query 3: "dental coverage options"**
-- Should return chunks from both documents
-- Notice how overlap helps - you might see adjacent chunks that both mention dental
+**What to Look For:** 
+- The tool should use LangChain.js's DynamicStructuredTool pattern
+- The description provides clear guidance to the agent about when to use this tool
+- The schema defines the expected input structure
+- The search function should return formatted results that provide context to the LLM
 
-**Query 4: "remote work policy"**
-- Should return chunks discussing remote/hybrid work from the Handbook
-- Test if context is preserved within the chunk
-
-**Observations to Make:**
-1. Do chunks contain enough context to be useful standalone?
-2. Are answers spread across multiple chunks? (This shows why RAG systems retrieve multiple chunks)
-3. Does overlap help or create duplicate results?
-4. Are some chunks too small or too large?
+**Documentation:**
+- [LangChain.js Tools](https://js.langchain.com/docs/how_to/#tools)
+- [Creating Custom Tools](https://js.langchain.com/docs/how_to/custom_tools/)
+- [DynamicStructuredTool](https://js.langchain.com/docs/modules/agents/tools/dynamic/)
 
 ---
 
-### Expected Output
+**Sub-Step 6.2: Add Chat Model**
 
+Next, add a chat model that will power the conversational agent.
+
+**Prompt 6.2: Add Chat Model**
 ```
-🤖 JavaScript LangChain Agent Starting...
+Add code to create a chat model:
+- Import ChatOpenAI from '@langchain/openai'
+- Create a ChatOpenAI instance with:
+  - model: "gpt-4o"
+  - temperature: 0 (for consistent, factual responses)
+  - configuration: { baseURL: same as embeddings, apiKey: same as embeddings }
+- Add this after creating the vector store and before the interactive loop
 
-=== Loading Documents into Vector Database ===
-
-Loading HealthInsuranceBrochure.md...
-✅ Successfully loaded HealthInsuranceBrochure.md as single document (2,456 characters)
-
-Loading EmployeeHandbook.md with markdown-aware chunking...
-📄 Creating chunks with 1500 character max and 200 character overlap...
-Processing chunk 1/18 (Section: Introduction)...
-Processing chunk 2/18 (Section: Benefits Overview)...
-...
-✅ Successfully loaded 18 chunks from EmployeeHandbook.md
-
-📊 Vector Database Summary:
-- Total records: 19
-- Documents: 2 (HealthInsuranceBrochure.md, EmployeeHandbook.md)
-- Chunks: 18 from EmployeeHandbook.md
-
-=== Semantic Search ===
-
-Enter a search query (or 'quit' to exit): health insurance benefits
-
-🔍 Search Results for "health insurance benefits":
-
-1. [Score: 0.8923] [HealthInsuranceBrochure.md] TechCorp Solutions Health & Wellness Benefits...
-2. [Score: 0.8756] [EmployeeHandbook.md (Chunk 3/18)] ## Health Insurance Plans\n\nTechCorp offers comprehensive...
-3. [Score: 0.8234] [EmployeeHandbook.md (Chunk 4/18)] ### Enrollment and Eligibility\n\nAll full-time employees...
-
-Enter a search query (or 'quit' to exit): remote work policy
-
-🔍 Search Results for "remote work policy":
-
-1. [Score: 0.9012] [EmployeeHandbook.md (Chunk 12/18)] ## Remote Work and Hybrid Options\n\nTechCorp supports...
-2. [Score: 0.8445] [EmployeeHandbook.md (Chunk 13/18)] Employees working remotely are expected to maintain...
-3. [Score: 0.7823] [EmployeeHandbook.md (Chunk 12/18)] ...equipment and internet connectivity requirements...
+Note: This uses the GitHub Models API endpoint, just like the embeddings.
 ```
+
+**What to Look For:**
+- The chat model should use the GitHub Models API (same endpoint as embeddings)
+- Model "gpt-4o" provides good balance of quality and speed
+- Temperature 0 ensures consistent, factual responses
+
+**Documentation:**
+- [ChatOpenAI](https://js.langchain.com/docs/integrations/chat/openai/)
+- [LangChain.js Chat Models](https://js.langchain.com/docs/integrations/chat/)
+
+---
+
+**Sub-Step 6.3: Create the Agent with the Search Tool**
+
+Now create an agent that can use your search tool to answer questions.
+
+**Prompt 6.3: Create ReAct Agent**
+```
+Create an agent using LangChain's ReAct pattern:
+- Import createReactAgent from '@langchain/langgraph/prebuilt'
+- Import ChatPromptTemplate and MessagesPlaceholder from '@langchain/core/prompts'
+- Create the search tool by calling createSearchTool(vectorStore)
+- Create a prompt using ChatPromptTemplate.fromMessages with:
+  - System message: "You are a helpful assistant that answers questions about company policies, benefits, and procedures. Use the search_documents tool to find relevant information before answering. Always cite which document chunks you used in your answer."
+  - MessagesPlaceholder for chat_history
+  - User message: {input}
+  - MessagesPlaceholder for agent_scratchpad
+- Create the agent using createReactAgent with:
+  - llm: chatModel
+  - tools: [searchTool]
+  - messageModifier: the prompt template
+
+Note: The ReAct pattern allows the agent to Reason and Act iteratively.
+The agent_scratchpad is where the agent tracks its thought process.
+```
+
+**What to Look For:**
+- The agent should be created with the search tool
+- The prompt should guide the agent to use the search tool
+- The ReAct pattern enables iterative reasoning
+
+**Documentation:**
+- [LangChain.js Agents](https://js.langchain.com/docs/how_to/#agents)
+- [ReAct Agent](https://js.langchain.com/docs/langgraph/)
+- [LangGraph Prebuilt](https://js.langchain.com/docs/langgraph/how-tos/create-react-agent/)
+
+---
+
+**Sub-Step 6.4: Replace the Interactive Search Loop with Agent Chat**
+
+Finally, replace the simple vector search CLI with an agent-powered chat interface.
+
+**Prompt 6.4: Create Agent Chat Loop**
+```
+Replace the existing semantic search while loop with a new chat interface that:
+
+1. Creates an empty array called chatHistory to track the conversation
+2. Prints a welcome message explaining the agent's capabilities
+3. In a loop:
+   - Prompt the user: "You: "
+   - Read user input using readline or similar
+   - Exit on "quit" or "exit"
+   - Call await agent.invoke({
+       input: userInput,
+       chat_history: chatHistory
+     })
+   - Extract messages from the result
+   - Find the AIMessage in the result and get its content
+   - Print the assistant's response with a prefix like "Agent: "
+   - Add the user message (HumanMessage) and agent response (AIMessage) to chatHistory
+   - Import HumanMessage and AIMessage from '@langchain/core/messages'
+
+The agent should automatically call the search_documents tool when needed to answer questions.
+
+Note: The agent will log its reasoning process to the console, showing when it calls the search tool.
+```
+
+**What to Look For:**
+- The agent should automatically invoke the search_documents tool when it needs information
+- Conversation history should be maintained across multiple turns using chatHistory
+- The agent's responses should reference the document chunks it retrieved
+- The console will show the agent's "thought process"
+
+**Documentation:**
+- [Agent Execution](https://js.langchain.com/docs/langgraph/how-tos/create-react-agent/)
+- [Message Types](https://js.langchain.com/docs/concepts/messages/)
+- [Chat History](https://js.langchain.com/docs/how_to/chatbots_memory/)
+
+---
+
+**Sub-Step 6.5: Test the Agent**
+
+Run your application and test the agent-powered RAG system.
+
+**Example Conversation:**
+```
+You: What health insurance benefits does the company offer?
+[Agent reasoning shows it's calling search_documents with query "health insurance benefits"]
+Agent: Based on the company documentation, we offer comprehensive health insurance...
+
+You: How do I enroll?
+[Agent reasoning shows it's calling search_documents with query "health insurance enrollment"]
+Agent: To enroll in health insurance benefits, you need to...
+
+You: What about dental coverage?
+[Agent reasoning shows it's calling search_documents with query "dental coverage"]
+Agent: According to the benefits documentation...
+```
+
+**What to Look For:**
+- The agent should automatically search documents when it needs information
+- Responses should be natural and conversational, not just returning raw chunks
+- The agent should maintain context across the conversation
+- The agent should cite which document chunks it used
+- The console output will show the agent's reasoning process
+
+---
+
+**Discussion: RAG vs. Simple Search**
+
+After completing Step 6, compare the agent-powered RAG approach to the simple vector search from earlier steps:
+
+**Simple Vector Search (Steps 1-5):**
+- Returns raw document chunks
+- User must read through chunks to find the answer
+- No synthesis or summarization
+- Limited to exact matches
+
+**Agent-Powered RAG (Step 6):**
+- Automatically searches when needed
+- Synthesizes information from multiple chunks
+- Provides natural language answers
+- Can handle follow-up questions with conversation context
+- Cites sources for transparency
+
+This is the complete RAG pattern used in production AI applications!
 
 ---
 
 ### Discussion Questions
+
+
 
 After completing Lab 4, consider:
 

@@ -32,8 +32,6 @@ Each document will have:
 - page_content: the document text
 - metadata: a dictionary with 'fileName', 'createdAt', and any other relevant fields
 - The embedding is generated automatically by the vector store
-
-No separate data model class is needed in Python with LangChain.
 ```
 
 **What to Look For:** LangChain's Document structure is simpler than Java - no annotations or class definitions needed.
@@ -46,7 +44,7 @@ Before loading documents, you need to clean up the sentence data from Lab 2.
 
 **Prompt 2: Remove the Sentence Loading Code**
 ```
-Comment out or remove all the code that:
+Remove all the code that:
 - Creates the sentences list
 - Adds sentences to the vector store using add_texts()
 - The search loop from Lab 2

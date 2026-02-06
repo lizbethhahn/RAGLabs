@@ -68,8 +68,6 @@ Replace the current embedding generation code with the following logic:
    - index: The position in the original array
 4. Print a confirmation message showing how many sentences were stored
 5. Print each sentence that was added
-
-Note: The vector store automatically generates embeddings for the texts using the embedding function you provided.
 ```
 
 **What to Look For:** This should replace the code that just calculated similarities. Now you're persisting the data in the vector store for later retrieval. The MemoryVectorStore automatically generates and stores the embeddings.

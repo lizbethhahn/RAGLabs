@@ -67,8 +67,6 @@ Replace the current embedding generation code with the following logic:
    - index: The position in the original list
 4. Print a confirmation message showing how many sentences were stored
 5. Print each sentence that was added
-
-Note: Chroma automatically generates embeddings for the texts using the embedding function you provided.
 ```
 
 **What to Look For:** This should replace the code that just calculated similarities. Now you're persisting the data in the vector store for later retrieval. The InMemoryVectorStore automatically generates and stores the embeddings.
@@ -114,6 +112,7 @@ After storing the sentences, add an interactive loop that:
 7. Display the results
 8. Print a blank line between searches for readability
 9. After the loop ends, print a goodbye message
+```
 
 ### Step 6: Test Your Semantic Search
 

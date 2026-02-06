@@ -43,6 +43,8 @@ It's like measuring the angle between two arrows:
 In the main() function, after the GITHUB_TOKEN check, create an OpenAIEmbeddings instance:
 - model: "text-embedding-3-small"
 - configuration: { baseURL: "https://models.inference.ai.azure.com", apiKey: process.env.GITHUB_TOKEN }
+
+NOTE: Set check_embedding_ctx_length=False as we need to demonstrate failures
 ```
 
 **Prompt 2: Create Test Sentences**
