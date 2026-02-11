@@ -164,6 +164,95 @@ TechCorp offers a 401(k) plan through Fidelity to help employees save for retire
 ### 4.5 Holidays
 TechCorp observes 11 paid holidays annually: New Year's Day, MLK Day, Presidents' Day, Memorial Day, Independence Day, Labor Day, Thanksgiving, Day After Thanksgiving, Christmas Eve, Christmas Day, New Year's Eve. Plus 1 floating personal day (must use by Dec 31). Full-time employees receive full pay; part-time receive pro-rated pay.
 
+### 4.6 Additional Benefit Programs
+TechCorp Solutions offers a comprehensive suite of additional benefits designed to support employee wellbeing and work-life balance.
+
+**Wellness Programs:**
+- **Annual Health Screenings:** Free biometric screenings and health risk assessments available each fall. Employees completing screenings receive $200 wellness credit toward next year's premiums.
+- **Fitness Reimbursement:** Up to $50/month reimbursement for gym memberships, fitness classes, or wellness apps. Submit receipts monthly to receive reimbursement.
+- **Weight Management Program:** Free participation in company-sponsored programs including nutritionist consultations and group support.
+- **Smoking Cessation:** Fully covered program including counseling, nicotine replacement therapy, and prescription medications through health plan.
+- **Mental Health Resources:** Beyond EAP, access to meditation apps, stress management workshops, and resilience training.
+
+**Transportation and Commuter Benefits:**
+- **Public Transit Subsidy:** Monthly subsidy of up to $300 for commuters using public transportation. Pre-tax deductions available up to IRS limits.
+- **Parking:** Company-subsidized parking available at most locations ($100/month subsidy). Electric vehicle charging stations available at select offices.
+- **Bike to Work Program:** Secure bike storage, shower facilities, and $20/month reimbursement for bike maintenance for employees cycling to work.
+- **Rideshare Program:** Matching service to connect employees for carpooling. Preferential parking for carpool participants.
+- **Work from Home Equipment:** Remote workers eligible for up to $1,000 reimbursement for home office setup (desk, chair, monitor, etc.).
+
+**Lifestyle Benefits:**
+- **Pet Insurance:** Discounted rates through Nationwide for pet health insurance covering dogs, cats, birds, and exotic pets.
+- **Identity Theft Protection:** Complimentary identity monitoring and protection services through LifeLock for all employees.
+- **Legal Services:** Access to prepaid legal services plan ($10/month) covering will preparation, document review, legal consultations, and representation.
+- **Home and Auto Insurance:** Group discount rates through Liberty Mutual (average savings 10-15%).
+- **Adoption Assistance:** Up to $10,000 reimbursement for qualified adoption expenses including agency fees, legal costs, and travel.
+
+**Family Support Programs:**
+- **Childcare Assistance:** Access to Bright Horizons backup care (10 days/year subsidized) for when regular childcare falls through.
+- **Elder Care Support:** Resources and referrals for elder care services, plus 5 days backup care annually.
+- **College Planning:** Free college planning services for employees' children, including financial aid consultations.
+- **Scholarship Program:** Annual scholarships ($2,500 each) awarded to dependents of employees pursuing higher education.
+
+**Financial Wellness:**
+- **Student Loan Assistance:** Company contributes up to $100/month toward employee student loan payments (requires 1 year service).
+- **Financial Planning:** Annual one-on-one sessions with certified financial planners at no cost.
+- **Emergency Savings Program:** Automatic payroll deduction to company-managed emergency fund earning competitive interest.
+- **First-time Homebuyer Program:** Assistance program providing education, resources, and up to $5,000 down payment assistance for eligible employees.
+
+**Employee Discounts:**
+- **Corporate Discounts:** Access to hundreds of merchant discounts through LifeMart (electronics, entertainment, travel, retail).
+- **Technology Purchase Program:** Annual opportunity to purchase company-grade laptops, tablets, and accessories at corporate pricing.
+- **Company Products:** 30% discount on TechCorp Solutions products and services for personal use.
+
+**Volunteer and Community Service:**
+- **Volunteer Time Off (VTO):** 16 hours (2 days) paid time annually for volunteering at qualified non-profit organizations.
+- **Matching Gifts:** TechCorp matches employee charitable donations dollar-for-dollar up to $1,000/year.
+- **Community Service Events:** Quarterly company-sponsored volunteer days (fully paid) supporting local communities.
+- **Disaster Relief:** Additional paid time off and donation matching for employees affected by or responding to natural disasters.
+
+### 4.7 Flexible Work Arrangements
+TechCorp Solutions recognizes that flexibility supports productivity and work-life balance. Several arrangements are available based on role and business needs.
+
+**Remote Work (Telecommuting):**
+- **Eligibility:** Employees with 6+ months tenure in roles suitable for remote work. Must demonstrate strong performance and self-management.
+- **Types:** Hybrid (2-3 days remote/week), Regular Remote (4 days/week), or Fully Remote (approved for specific roles or circumstances).
+- **Requirements:** Dedicated workspace, reliable high-speed internet (minimum 50 Mbps), availability during core hours (10 AM - 3 PM).
+- **Equipment:** Company provides laptop, monitor, headset. Optional: keyboard, mouse, webcam. Home office stipend up to $1,000 for furniture/supplies.
+- **Agreements:** Must sign Remote Work Agreement outlining expectations, security requirements, and performance standards.
+- **Periodic In-Office:** Remote employees expected on-site for quarterly meetings, team events, and critical projects as needed.
+
+**Flexible Scheduling:**
+- **Core Hours:** All employees available during core business hours (10 AM - 3 PM). Outside core hours, flexible start/end times with manager approval.
+- **Compressed Workweek:** Work full-time hours in fewer days (e.g., four 10-hour days). Requires manager approval and business need compatibility.
+- **Seasonal Flexibility:** Summer hours program (Memorial Day - Labor Day): work extra hours Monday-Thursday for early Friday departure.
+
+**Job Sharing:**
+- Two part-time employees share responsibilities of one full-time position. Each works 20-30 hours/week.
+- Requires compatible skills, strong communication, and manager approval. Pro-rated benefits provided.
+
+**Gradual Return Programs:**
+- Employees returning from extended leave (parental, medical) may request gradual return schedules.
+- Typically starts at 50-75% hours for 2-4 weeks before returning to full schedule.
+- Full benefits maintained during gradual return period.
+
+**Requesting Flexible Arrangements:**
+1. Discuss with manager informally to assess feasibility
+2. Submit formal request via HR portal (2 weeks notice)
+3. Manager reviews considering: job requirements, team impact, performance history, business needs
+4. Decision communicated within 1 week; appeals to department director
+5. Trial period (typically 90 days) before permanent approval
+6. Arrangements reviewed annually and may be modified/revoked based on performance or business needs
+
+**Managing Remote Work:**
+- Regular check-ins with manager (minimum weekly)
+- Maintain responsive communication during business hours
+- Attend all virtual meetings with camera on when possible
+- Track time and productivity using approved tools
+- Ensure home workspace is safe, secure, and ergonomic
+- Use VPN for all company system access
+- Report technical issues immediately
+
 ## 5. Time Off and Leaves
 ### 5.1 Vacation Policy
 Full-time employees accrue vacation based on tenure:
@@ -201,6 +290,100 @@ Birth mothers also receive 6-8 weeks STD (60% pay) for recovery before parental 
 - **Pregnancy Loss:** 2 weeks paid
 
 Use within 2 weeks of death. Documentation may be requested. EAP counseling available.
+
+### 5.6 Military Leave
+TechCorp Solutions complies with USERRA (Uniformed Services Employment and Reemployment Rights Act) and provides military leave for employees serving in the U.S. uniformed services.
+
+**Eligibility:** All employees called to active duty, reserve training, or National Guard service.
+
+**Types of Military Leave:**
+- **Annual Training:** Up to 2 weeks paid leave for annual training exercises
+- **Active Duty:** Unpaid leave for duration of service (up to 5 years cumulative under USERRA)
+- **Emergency Deployment:** Immediate unpaid leave as required
+
+**Pay During Leave:**
+- First 2 weeks of military leave per calendar year: full pay continuation (for active duty or training)
+- Additional leave: unpaid, but employees may use accrued vacation
+- Military pay differential: if military pay is less than regular salary, TechCorp pays the difference for deployments up to 180 days
+
+**Benefits During Leave:**
+- Health insurance continues for up to 24 months (employee pays normal premiums for first 30 days, then COBRA rates)
+- Vacation and sick leave continue to accrue during paid portions
+- 401(k) match continues during paid portions
+- Service time counts toward tenure/seniority
+
+**Returning from Military Leave:**
+- Employees must apply for reemployment within time limits (1-90 days depending on length of service)
+- Return to same position or position of like seniority, status, and pay
+- Benefits reinstated without waiting periods
+- No loss of seniority or benefits
+- Cannot be terminated without cause for 1 year after return (if service was 180+ days)
+
+**Family Military Leave:** Employees with family members deployed may take unpaid leave (or use vacation/sick time) for qualifying events under the Military Family Leave Act.
+
+**Process:** Notify HR as soon as orders are received. Provide copies of military orders. Complete Military Leave Request Form. Upon return, provide discharge papers and reemployment application.
+
+### 5.7 Jury Duty and Court Appearances
+**Jury Duty:** Employees summoned for jury duty receive paid leave for the duration of service. Submit summons to supervisor and HR. Return to work if excused early or if jury duty is less than 4 hours.
+
+**Court Appearances:** Paid leave provided for court appearances as witness when subpoenaed or as victim. Unpaid leave for personal legal matters (may use vacation/personal time).
+
+**Compensation:** Full-time employees receive full salary. May retain jury duty fees. If jury duty pay exceeds regular wages, employee keeps excess.
+
+**Process:** Provide summons/subpoena to supervisor and HR at least 1 week in advance. Submit proof of service upon return.
+
+### 5.8 Educational Leave
+Employees may request unpaid educational leave for full-time degree programs or extended educational opportunities.
+
+**Eligibility:** 2+ years employment, good standing, manager and HR approval required.
+
+**Duration:** Up to 1 year (may be extended to 2 years in exceptional circumstances).
+
+**Process:** Submit written request 90 days in advance including: program description, start/end dates, career development relevance, and plan to maintain skills. Manager considers business impact, employee performance, and strategic value.
+
+**During Leave:**
+- Position not guaranteed but company makes reasonable effort to find comparable role upon return
+- Benefits end on last day of work; COBRA available
+- No vacation/sick accrual
+- May maintain 401(k) with personal contributions
+- Tuition reimbursement may be available depending on program relevance
+
+**Return from Leave:** Notify HR 60 days before return. Company identifies available positions matching skills/experience. No guarantee of same position, salary, or location.
+
+### 5.9 Sabbatical Leave
+Employees with 10+ years of continuous service may apply for paid sabbatical leave.
+
+**Sabbatical Program:**
+- 4 weeks paid leave (in addition to regular vacation)
+- Available once every 5 years after initial 10-year qualifying period
+- Must be used for rest, rejuvenation, travel, volunteering, or personal projects
+- Cannot be used for outside employment
+
+**Eligibility Requirements:**
+- 10+ years continuous employment
+- "Meets Expectations" or higher performance rating
+- Good standing (no active discipline)
+- Manager and department head approval
+- Business conditions permit absence
+
+**Application Process:**
+- Submit sabbatical request at least 6 months in advance
+- Include proposed dates and general plan for time
+- Manager evaluates business impact and coverage plan
+- HR reviews and approves/denies within 30 days
+- If approved, develop transition/coverage plan
+
+**During Sabbatical:**
+- Full salary and benefits continue
+- Position guaranteed upon return
+- Vacation/sick time continues to accrue
+- May not perform outside work for pay
+- Limited company contact (check email weekly for urgent matters only)
+
+**Upon Return:**
+- Employees return to same or equivalent role
+- Complete brief presentation/sharing session about sabbatical experience (optional but encouraged)
+- Cannot terminate employment or request transfer for 6 months after return
 
 ## 6. Performance and Development
 ### 6.1 Performance Reviews
