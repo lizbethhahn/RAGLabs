@@ -151,10 +151,10 @@ For markdown documents, respect the document structure (headings, sections).
 Create an async function to chunk markdown by structure:
 - Read the EmployeeHandbook.md file
 - Use MarkdownHeaderTextSplitter from @langchain/textsplitters with:
-  - headersToSplitOn: [{"#": "Header 1"}, {"##": "Header 2"}, {"###": "Header 3"}]
+  - headersToSplitOn: [{"#": "Header 1"}, {"##": "Header 2"}]
 - This splits the document on markdown headers, preserving structure
 - Then apply RecursiveCharacterTextSplitter with:
-  - chunkSize: 1500
+  - chunkSize: 5000
   - chunkOverlap: 200
 - The overlap helps preserve context across chunk boundaries
 - Pass the chunks to loadDocumentWithChunks

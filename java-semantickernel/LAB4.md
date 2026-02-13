@@ -158,7 +158,7 @@ For markdown documents, respect the document structure (headings, sections).
 Create a method to chunk markdown by structure:
 - Read the EmployeeHandbook.md file
 - Implement markdown-aware splitting that respects document structure (headings, sections)
-- Set chunk size to 1000 characters with 100 character overlap between chunks
+- Set chunk size to 5000 characters with 100 character overlap between chunks
 - The overlap helps preserve context across chunk boundaries
 - Pass the chunks to loadDocumentWithChunksAsync
 - Print examples of the first 3 chunks showing how headings are preserved
