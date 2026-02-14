@@ -3,6 +3,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using OpenAI;
 using System.ClientModel;
 using System.Numerics.Tensors;
@@ -18,6 +20,8 @@ namespace SemanticKernelAgent
             // Load configuration from environment variables
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .AddUserSecrets<Program>()
                 .Build();
 
             var githubToken = configuration["GITHUB_TOKEN"];
@@ -38,9 +42,65 @@ namespace SemanticKernelAgent
                 new OpenAIClientOptions { Endpoint = new Uri("https://models.inference.ai.azure.com") }
             );
 
-            var kernel = builder.Build();
-            var embeddingService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+            // Add text embedding generation service to the kernel builder
+#pragma warning disable CS0618 // Type or member is obsolete
+            builder.AddOpenAITextEmbeddingGeneration(
+                modelId: "text-embedding-3-small",
+                openAIClient: openAIClient
+            );
+#pragma warning restore CS0618 // Type or member is obsolete
 
+            // Build the kernel
+            var kernel = builder.Build();
+
+            // Get the embedding service from the kernel
+#pragma warning disable CS0618
+            var embeddingService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+#pragma warning restore CS0618
+
+
+            Console.WriteLine("🔍 Embedding Inspector Lab\n");
+
+            // Define test sentences
+            string[] testSentences = {
+                "The movie was excellent and entertaining.",
+                "The movie was terrible and boring.",
+                "I enjoyed watching the film."
+            };
+
+            // Output test sentences to the console
+            Console.WriteLine("Test Sentences:");
+            foreach (var sentence in testSentences)
+            {
+                Console.WriteLine($"- {sentence}");
+            }
+
+            // Generate embeddings for each sentence
+            var embeddings = new List<float[]>();
+
+            for (int i = 0; i < testSentences.Length; i++)
+            {
+                string sentence = testSentences[i];
+                Console.WriteLine($"Generating embedding for Sentence {i + 1}: {sentence}");
+
+                // Generate embedding
+                var embedding = await embeddingService.GenerateEmbeddingAsync(sentence);
+                embeddings.Add(embedding.ToArray());
+
+                Console.WriteLine($"Sentence {i + 1}: {sentence}");
+            }
+
+            // Calculate and display cosine similarity between sentence pairs
+            Console.WriteLine("\nCosine Similarity Results:");
+
+            double similarity1and2 = CalculateCosineSimilarity(embeddings[0], embeddings[1]);
+            Console.WriteLine($"Similarity between Sentence 1 and Sentence 2: {similarity1and2:F4}");
+
+            double similarity2and3 = CalculateCosineSimilarity(embeddings[1], embeddings[2]);
+            Console.WriteLine($"Similarity between Sentence 2 and Sentence 3: {similarity2and3:F4}");
+
+            double similarity3and1 = CalculateCosineSimilarity(embeddings[2], embeddings[0]);
+            Console.WriteLine($"Similarity between Sentence 3 and Sentence 1: {similarity3and1:F4}");
         }
 
         /// <summary>
