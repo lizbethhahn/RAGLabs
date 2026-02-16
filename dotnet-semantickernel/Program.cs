@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OpenAI;
 using System.ClientModel;
 using System.Numerics.Tensors;
+using Microsoft.Extensions.VectorData;
 
 namespace SemanticKernelAgent
 {
@@ -19,7 +20,10 @@ namespace SemanticKernelAgent
 
             // Load configuration from environment variables
             var configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile(
+                    "appsettings.json", 
+                    optional: true, 
+                    reloadOnChange: true)
                 .AddEnvironmentVariables()
                 .AddUserSecrets<Program>()
                 .Build();
@@ -48,59 +52,137 @@ namespace SemanticKernelAgent
                 modelId: "text-embedding-3-small",
                 openAIClient: openAIClient
             );
-#pragma warning restore CS0618 // Type or member is obsolete
+
+
+            // Register an in-memory vector store with the kernel builder
+            builder.Services.AddInMemoryVectorStore();
 
             // Build the kernel
             var kernel = builder.Build();
 
+            // Obtain a collection for SentenceRecord named "sentences"
+            var vectorStore = kernel.Services.GetRequiredService<VectorStore>();
+            var sentenceCollection = vectorStore.GetCollection<string, SentenceRecord>("sentences");
+            
+            await sentenceCollection.EnsureCollectionExistsAsync();
+
             // Get the embedding service from the kernel
-#pragma warning disable CS0618
+
             var embeddingService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 #pragma warning restore CS0618
-
 
             Console.WriteLine("🔍 Embedding Inspector Lab\n");
 
             // Define test sentences
             string[] testSentences = {
-                "The movie was excellent and entertaining.",
-                "The movie was terrible and boring.",
-                "I enjoyed watching the film."
+                // Animals and pets
+                "Dogs are loyal and friendly animals.",
+                "Cats love to climb and explore their surroundings.",
+
+                // Science and physics
+                "Gravity is a force that attracts objects toward each other.",
+                "The speed of light is approximately 299,792 kilometers per second.",
+
+                // Food and cooking
+                "Pizza is a popular dish made with cheese and tomato sauce.",
+                "Baking a cake requires flour, eggs, and sugar.",
+
+                // Sports and activities
+                "Soccer is played by two teams of eleven players each.",
+                "Swimming is a great way to stay fit and healthy.",
+
+                // Weather and nature
+                "Rainbows appear when sunlight passes through raindrops.",
+                "Thunderstorms often bring heavy rain and lightning.",
+
+                // Technology and programming
+                "Artificial intelligence is transforming the tech industry.",
+                "Learning to code can open up many career opportunities."
             };
 
-            // Output test sentences to the console
-            Console.WriteLine("Test Sentences:");
+            // Create a list to store SentenceRecord objects
+            var sentenceRecords = new List<SentenceRecord>();
+
+            // Loop through each sentence in the sentences array
             foreach (var sentence in testSentences)
             {
-                Console.WriteLine($"- {sentence}");
-            }
-
-            // Generate embeddings for each sentence
-            var embeddings = new List<float[]>();
-
-            for (int i = 0; i < testSentences.Length; i++)
-            {
-                string sentence = testSentences[i];
-                Console.WriteLine($"Generating embedding for Sentence {i + 1}: {sentence}");
+                Console.WriteLine($"Generating embedding for: {sentence}");
 
                 // Generate embedding
                 var embedding = await embeddingService.GenerateEmbeddingAsync(sentence);
-                embeddings.Add(embedding.ToArray());
 
-                Console.WriteLine($"Sentence {i + 1}: {sentence}");
+                // Create a new SentenceRecord
+                var record = new SentenceRecord
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Text = sentence,
+                    Embedding = embedding,
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+
+                // Add the record to the list
+                sentenceRecords.Add(record);
             }
+
+            // Use the collection's UpsertBatchAsync method to store all records
+            await sentenceCollection.UpsertAsync(records: sentenceRecords);
+
+            // Print a confirmation message showing how many sentences were stored
+            Console.WriteLine($"✅ {sentenceRecords.Count} sentences stored in the vector store.");
 
             // Calculate and display cosine similarity between sentence pairs
             Console.WriteLine("\nCosine Similarity Results:");
 
-            double similarity1and2 = CalculateCosineSimilarity(embeddings[0], embeddings[1]);
+            double similarity1and2 = CalculateCosineSimilarity(
+                sentenceRecords[0].Embedding, 
+                sentenceRecords[1].Embedding);
             Console.WriteLine($"Similarity between Sentence 1 and Sentence 2: {similarity1and2:F4}");
 
-            double similarity2and3 = CalculateCosineSimilarity(embeddings[1], embeddings[2]);
+            double similarity2and3 = CalculateCosineSimilarity(
+                sentenceRecords[1].Embedding, 
+                sentenceRecords[2].Embedding);
             Console.WriteLine($"Similarity between Sentence 2 and Sentence 3: {similarity2and3:F4}");
 
-            double similarity3and1 = CalculateCosineSimilarity(embeddings[2], embeddings[0]);
+            double similarity3and1 = CalculateCosineSimilarity(
+                sentenceRecords[2].Embedding, 
+                sentenceRecords[0].Embedding);
             Console.WriteLine($"Similarity between Sentence 3 and Sentence 1: {similarity3and1:F4}");
+
+            // Search for sentences similar to a query
+            Console.WriteLine("\nSearching for sentences similar to a query...");
+
+            // Define a search query
+            string searchQuery = "The movie was excellent and entertaining.";
+
+            // Perform the search
+            await SearchSentencesAsync(embeddingService, sentenceCollection, searchQuery);
+
+            Console.WriteLine("✅ Search complete.");
+
+            Console.WriteLine("=== Semantic Search ===");
+            while (true)
+            {
+                Console.Write("Enter a search query (or 'quit' to exit): ");
+                var userInput = Console.ReadLine();
+
+                // Check if the user wants to quit
+                if (string.Equals(userInput, "quit", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(userInput, "exit", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("Goodbye!");
+                    break;
+                }
+
+                // Skip empty input
+                if (string.IsNullOrWhiteSpace(userInput))
+                {
+                    Console.WriteLine("Please enter a valid query.");
+                    continue;
+                }
+
+                // Perform the search
+                await SearchSentencesAsync(embeddingService, sentenceCollection, userInput);
+            }
         }
 
         /// <summary>
@@ -113,7 +195,9 @@ namespace SemanticKernelAgent
         /// <param name="vector1">First vector</param>
         /// <param name="vector2">Second vector</param>
         /// <returns>Cosine similarity value between -1 and 1</returns>
-        static double CalculateCosineSimilarity(ReadOnlyMemory<float> vector1, ReadOnlyMemory<float> vector2)
+        static double CalculateCosineSimilarity(
+            ReadOnlyMemory<float> vector1, 
+            ReadOnlyMemory<float> vector2)
         {
             var span1 = vector1.Span;
             var span2 = vector2.Span;
@@ -139,5 +223,58 @@ namespace SemanticKernelAgent
             // Calculate cosine similarity
             return dotProduct / (magnitude1 * magnitude2);
         }
+
+        /// <summary>
+        /// Searches the vector store collection for the most similar sentences to a query.
+        /// </summary>
+        /// <param name="embeddingService">The embedding generation service.</param>
+        /// <param name="sentenceCollection">The vector store collection.</param>
+        /// <param name="query">The search query string.</param>
+        /// <param name="topK">The number of top results to return (default is 3).</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+
+#pragma warning disable CS0618
+        private static async Task SearchSentencesAsync(
+            ITextEmbeddingGenerationService embeddingService,
+            VectorStoreCollection<string, SentenceRecord> sentenceCollection,
+            string searchQuery,
+            int topK = 3)
+#pragma warning restore CS0618
+        {
+            // Generate embedding for the search query
+            var queryEmbedding = await embeddingService.GenerateEmbeddingAsync(searchQuery);
+
+            Console.WriteLine($"\n🔍 Search Results for \"{searchQuery}\":\n");
+
+            int rank = 1;
+
+            await foreach (var result in sentenceCollection.SearchAsync(queryEmbedding, topK))
+            {
+                Console.WriteLine($"{rank}. [Score: {result.Score:F4}] {result.Record.Text}");
+                rank++;
+            }
+
+            if (rank == 1)
+            {
+                Console.WriteLine("No results found.");
+            }
+
+            Console.WriteLine();
+        }
+    }
+
+    public record SentenceRecord
+    {
+        [VectorStoreKey]
+        public required string Id { get; init; }
+
+        [VectorStoreData]
+        public required string Text { get; init; }
+
+        [VectorStoreVector(1536)]
+        public ReadOnlyMemory<float> Embedding { get; init; }
+
+        [VectorStoreData]
+        public DateTimeOffset CreatedAt { get; init; }
     }
 }
