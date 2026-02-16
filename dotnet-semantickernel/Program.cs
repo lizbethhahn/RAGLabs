@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OpenAI;
 using System.ClientModel;
 using System.Numerics.Tensors;
+using System.IO;
 using Microsoft.Extensions.VectorData;
 
 namespace SemanticKernelAgent
@@ -60,11 +61,11 @@ namespace SemanticKernelAgent
             // Build the kernel
             var kernel = builder.Build();
 
-            // Obtain a collection for SentenceRecord named "sentences"
+            // Obtain a collection for DocumentRecord named "sentences"
             var vectorStore = kernel.Services.GetRequiredService<VectorStore>();
-            var sentenceCollection = vectorStore.GetCollection<string, SentenceRecord>("sentences");
+            var documentCollection = vectorStore.GetCollection<string, DocumentRecord>("sentences");
             
-            await sentenceCollection.EnsureCollectionExistsAsync();
+            await documentCollection.EnsureCollectionExistsAsync();
 
             // Get the embedding service from the kernel
 
@@ -73,80 +74,18 @@ namespace SemanticKernelAgent
 
             Console.WriteLine("🔍 Embedding Inspector Lab\n");
 
-            // Define test sentences
-            string[] testSentences = {
-                // Animals and pets
-                "Dogs are loyal and friendly animals.",
-                "Cats love to climb and explore their surroundings.",
+            // Demo ingestion removed — load documents and create DocumentRecord instances here.
+            // (Previously: created a test sentences array, generated embeddings, and upserted records.)
 
-                // Science and physics
-                "Gravity is a force that attracts objects toward each other.",
-                "The speed of light is approximately 299,792 kilometers per second.",
+            Console.WriteLine("=== Loading Documents into Vector Database ===");
 
-                // Food and cooking
-                "Pizza is a popular dish made with cheese and tomato sauce.",
-                "Baking a cake requires flour, eggs, and sugar.",
+            var brochurePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "HealthInsuranceBrochure.md"));
+            Console.WriteLine($"Loading {Path.GetFileName(brochurePath)}...");
+            await LoadDocumentAsync(embeddingService, documentCollection, brochurePath);
 
-                // Sports and activities
-                "Soccer is played by two teams of eleven players each.",
-                "Swimming is a great way to stay fit and healthy.",
-
-                // Weather and nature
-                "Rainbows appear when sunlight passes through raindrops.",
-                "Thunderstorms often bring heavy rain and lightning.",
-
-                // Technology and programming
-                "Artificial intelligence is transforming the tech industry.",
-                "Learning to code can open up many career opportunities."
-            };
-
-            // Create a list to store SentenceRecord objects
-            var sentenceRecords = new List<SentenceRecord>();
-
-            // Loop through each sentence in the sentences array
-            foreach (var sentence in testSentences)
-            {
-                Console.WriteLine($"Generating embedding for: {sentence}");
-
-                // Generate embedding
-                var embedding = await embeddingService.GenerateEmbeddingAsync(sentence);
-
-                // Create a new SentenceRecord
-                var record = new SentenceRecord
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Text = sentence,
-                    Embedding = embedding,
-                    CreatedAt = DateTimeOffset.UtcNow
-                };
-
-                // Add the record to the list
-                sentenceRecords.Add(record);
-            }
-
-            // Use the collection's UpsertBatchAsync method to store all records
-            await sentenceCollection.UpsertAsync(records: sentenceRecords);
-
-            // Print a confirmation message showing how many sentences were stored
-            Console.WriteLine($"✅ {sentenceRecords.Count} sentences stored in the vector store.");
-
-            // Calculate and display cosine similarity between sentence pairs
-            Console.WriteLine("\nCosine Similarity Results:");
-
-            double similarity1and2 = CalculateCosineSimilarity(
-                sentenceRecords[0].Embedding, 
-                sentenceRecords[1].Embedding);
-            Console.WriteLine($"Similarity between Sentence 1 and Sentence 2: {similarity1and2:F4}");
-
-            double similarity2and3 = CalculateCosineSimilarity(
-                sentenceRecords[1].Embedding, 
-                sentenceRecords[2].Embedding);
-            Console.WriteLine($"Similarity between Sentence 2 and Sentence 3: {similarity2and3:F4}");
-
-            double similarity3and1 = CalculateCosineSimilarity(
-                sentenceRecords[2].Embedding, 
-                sentenceRecords[0].Embedding);
-            Console.WriteLine($"Similarity between Sentence 3 and Sentence 1: {similarity3and1:F4}");
+            var handbookPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "EmployeeHandbook.md"));
+            Console.WriteLine($"Loading {Path.GetFileName(handbookPath)}...");
+            await LoadDocumentAsync(embeddingService, documentCollection, handbookPath);
 
             // Search for sentences similar to a query
             Console.WriteLine("\nSearching for sentences similar to a query...");
@@ -155,7 +94,7 @@ namespace SemanticKernelAgent
             string searchQuery = "The movie was excellent and entertaining.";
 
             // Perform the search
-            await SearchSentencesAsync(embeddingService, sentenceCollection, searchQuery);
+            await SearchSentencesAsync(embeddingService, documentCollection, searchQuery);
 
             Console.WriteLine("✅ Search complete.");
 
@@ -181,7 +120,7 @@ namespace SemanticKernelAgent
                 }
 
                 // Perform the search
-                await SearchSentencesAsync(embeddingService, sentenceCollection, userInput);
+                await SearchSentencesAsync(embeddingService, documentCollection, userInput);
             }
         }
 
@@ -236,10 +175,9 @@ namespace SemanticKernelAgent
 #pragma warning disable CS0618
         private static async Task SearchSentencesAsync(
             ITextEmbeddingGenerationService embeddingService,
-            VectorStoreCollection<string, SentenceRecord> sentenceCollection,
+            VectorStoreCollection<string, DocumentRecord> sentenceCollection,
             string searchQuery,
             int topK = 3)
-#pragma warning restore CS0618
         {
             // Generate embedding for the search query
             var queryEmbedding = await embeddingService.GenerateEmbeddingAsync(searchQuery);
@@ -250,7 +188,7 @@ namespace SemanticKernelAgent
 
             await foreach (var result in sentenceCollection.SearchAsync(queryEmbedding, topK))
             {
-                Console.WriteLine($"{rank}. [Score: {result.Score:F4}] {result.Record.Text}");
+                Console.WriteLine($"{rank}. [Score: {result.Score:F4}] {result.Record.Content}");
                 rank++;
             }
 
@@ -261,15 +199,70 @@ namespace SemanticKernelAgent
 
             Console.WriteLine();
         }
+
+        private static async Task LoadDocumentAsync(
+            ITextEmbeddingGenerationService embeddingService,
+            VectorStoreCollection<string, DocumentRecord> collection,
+            string filePath)
+        {
+            try
+            {
+                if (!File.Exists(filePath))
+                {
+                    Console.WriteLine($"❌ File not found: {filePath}");
+                    return;
+                }
+
+                var content = await File.ReadAllTextAsync(filePath);
+
+                var embedding = await embeddingService.GenerateEmbeddingAsync(content);
+
+                var record = new DocumentRecord
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    FileName = Path.GetFileName(filePath),
+                    Content = content,
+                    Embedding = embedding,
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+
+                await collection.UpsertAsync(records: new[] { record });
+
+                Console.WriteLine($"✅ Upserted '{record.FileName}' ({record.Content.Length} chars).");
+            }
+            catch (FileNotFoundException)
+            {
+                Console.WriteLine($"❌ File not found: {filePath}");
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.Message ?? string.Empty;
+                if (msg.IndexOf("maximum context length", StringComparison.OrdinalIgnoreCase) >= 0
+                    || msg.IndexOf("token", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    Console.WriteLine("⚠️ This document is too large to embed as a single chunk.");
+                    Console.WriteLine("Token limit exceeded. The embedding model can only process up to 8,191 tokens at once.");
+                    Console.WriteLine("Solution: The document needs to be split into smaller chunks.");
+                }
+                else
+                {
+                    Console.WriteLine($"❌ Error loading '{filePath}': {ex.Message}");
+                }
+            }
+        }
+#pragma warning restore CS0618
     }
 
-    public record SentenceRecord
+    public record DocumentRecord
     {
         [VectorStoreKey]
         public required string Id { get; init; }
 
         [VectorStoreData]
-        public required string Text { get; init; }
+        public required string FileName { get; init; }
+
+        [VectorStoreData]
+        public required string Content { get; init; }
 
         [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> Embedding { get; init; }
